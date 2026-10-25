@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Prompt Bench · Video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<style>
+:root{
+  --bg:#f6f6f4; --panel:#ffffff; --ink:#18181b; --muted:#6b6b72; --line:#e4e4e0;
+  --accent:#2f5bff; --chip:#f0f0ec; --bad:#c2410c; --badbg:#fff1e8; --good:#15803d;
+  --code:#f3f3ef;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111113; --panel:#18181b; --ink:#ececee; --muted:#9a9aa3; --line:#2a2a2f;
+  --accent:#7b9bff; --chip:#222226; --bad:#fb923c; --badbg:#2a1a10; --good:#4ade80; --code:#1e1e22;}}
+:root[data-theme="dark"]{
+  --bg:#111113; --panel:#18181b; --ink:#ececee; --muted:#9a9aa3; --line:#2a2a2f;
+  --accent:#7b9bff; --chip:#222226; --bad:#fb923c; --badbg:#2a1a10; --good:#4ade80; --code:#1e1e22;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.top{display:flex;align-items:baseline;gap:14px;padding:16px 0 6px}
+.top h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
+.top .sub{color:var(--muted);font-size:13px}
+nav{display:flex;gap:4px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:none}
+nav button{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 13px;border-radius:999px;font:500 13px Inter,sans-serif;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+nav button .c{opacity:.55;margin-left:6px}
+main{padding:22px 0 80px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:22px;overflow:hidden}
+.head{display:flex;gap:12px;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.num{font:600 13px 'JetBrains Mono',monospace;color:var(--muted)}
+.title{font-weight:600;font-size:16px;flex:1;min-width:200px}
+.score{font:600 14px 'JetBrains Mono',monospace;padding:4px 10px;border-radius:8px;background:var(--chip)}
+.experts{font-size:12px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:1fr 1.4fr;gap:0}
+.col{padding:16px 20px;min-width:0}
+.col+.col{border-left:1px solid var(--line)}
+.lbl{display:flex;align-items:center;justify-content:space-between;gap:8px;font:600 11px Inter;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:4px 10px;font:500 12px Inter;cursor:pointer;text-transform:none;letter-spacing:0}
+.btn:hover{border-color:var(--ink)}
+.task{white-space:pre-wrap;font-size:14px}
+.md{font-size:14px;max-height:340px;overflow:auto;position:relative}
+.md.open{max-height:none}
+.md pre,.md code{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.md pre{background:var(--code);padding:10px 12px;border-radius:8px;white-space:pre-wrap;word-break:break-word}
+.md blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid var(--line);color:var(--ink)}
+.md table{border-collapse:collapse;font-size:13px}.md td,.md th{border:1px solid var(--line);padding:4px 8px}
+.md h1,.md h2{font-size:15px;margin:14px 0 6px}
+.more{margin-top:8px}
+details.sent{margin-top:14px}
+details.sent summary{cursor:pointer;font-size:13px;color:var(--muted)}
+details.sent pre{background:var(--code);padding:10px 12px;border-radius:8px;white-space:pre-wrap;font:12.5px/1.5 'JetBrains Mono',monospace;max-height:300px;overflow:auto}
+.vids{padding:16px 20px 20px;border-top:1px solid var(--line)}
+.grid{display:grid;gap:10px}
+.grid.h{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.grid.v{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+.tile{position:relative;border-radius:10px;overflow:hidden;background:#000;border:1px solid var(--line)}
+.tile video{display:block;width:100%;height:100%;object-fit:cover;background:#000}
+.grid.h .tile{aspect-ratio:16/9}.grid.v .tile{aspect-ratio:9/16}
+.tile .bar{position:absolute;left:0;right:0;top:0;display:flex;gap:6px;justify-content:space-between;align-items:center;padding:6px;background:linear-gradient(rgba(0,0,0,.6),transparent);opacity:0;transition:.15s}
+.tile:hover .bar,.tile:focus-within .bar{opacity:1}
+@media (hover:none){.tile .bar{opacity:1}}
+.tile .bar span{color:#fff;font:600 11px 'JetBrains Mono',monospace}
+.ic{border:0;background:rgba(255,255,255,.9);color:#111;border-radius:6px;padding:4px 8px;font:600 11px Inter;cursor:pointer}
+.tile.blocked{background:var(--badbg);border-color:color-mix(in srgb,var(--bad) 40%,transparent);display:flex;flex-direction:column;justify-content:center;padding:10px;color:var(--bad);font-size:12px;line-height:1.35}
+.tile.blocked b{font-size:12.5px;margin-bottom:4px}
+.tile.pending{background:var(--chip);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+.clean{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+.clean h4{margin:0 0 4px;font-size:13.5px}
+.clean .chg{font-size:13px;color:var(--muted);margin-bottom:10px;white-space:pre-wrap}
+.empty{padding:40px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:14px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1}
+@media (max-width:820px){.cols{grid-template-columns:1fr}.col+.col{border-left:0;border-top:1px solid var(--line)}.wrap{padding:0 16px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top"><h1>Prompt Bench · Video</h1><span class="sub" id="sub"></span></div>
+  <nav id="tabs"></nav>
+</div></header>
+<main class="wrap" id="main"></main>
+<div class="toast" id="toast"></div>
+<script src="data.js"></script>
+<script>
+const D = window.BENCH, $ = s => document.querySelector(s);
+const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toast = t => { const e=$('#toast'); e.textContent=t; e.classList.add('on'); setTimeout(()=>e.classList.remove('on'),1400); };
+const TEXT = {};
+function copy(id){ navigator.clipboard.writeText(TEXT[id]).then(()=>toast('Скопировано')); }
+async function dl(url, name, btn){
+  btn.textContent='…';
+  try{ const b = await (await fetch(url)).blob(); const a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
+  catch(e){ window.open(url,'_blank'); }
+  btn.textContent='Скачать';
+}
+function fs(btn){ const v=btn.closest('.tile').querySelector('video'); (v.requestFullscreen||v.webkitEnterFullscreen||v.webkitRequestFullscreen).call(v); v.play(); }
+
+function tile(t, item, cat, reason){
+  if (t.status==='completed' && t.url){
+    const name = `${cat.name} ${item.n} take${t.n}.mp4`;
+    return `<div class="tile"><video src="${t.url}" poster="${t.poster}" preload="none" controls playsinline></video>
+      <div class="bar"><span>#${t.n}</span><span><button class="ic" onclick="fs(this)">⤢ Экран</button>
+      <button class="ic" onclick="dl('${t.url}','${esc(name)}',this)">Скачать</button></span></div></div>`;
+  }
+  if (t.status==='ip_detected')
+    return `<div class="tile blocked"><b>#${t.n} · заблокировано</b>Фильтр IP Higgsfield. ${reason}</div>`;
+  if (t.status==='failed' || t.status==='nsfw')
+    return `<div class="tile blocked"><b>#${t.n} · ошибка</b>Генерация не прошла (${t.status}).</div>`;
+  return `<div class="tile pending">#${t.n} · генерируется…</div>`;
+}
+
+function card(item, cat){
+  const id = cat.id+item.n;
+  TEXT[id+'t']=item.task; TEXT[id+'a']=item.answer; TEXT[id+'p']=item.prompt;
+  const reason = item.ip.length ? 'В промпте: '+item.ip.join(', ')+'.' : 'Имён и брендов в промпте нет — вероятно, сработал на сгенерированное лицо или кадр.';
+  const g = item.aspect==='9:16' ? 'v' : 'h';
+  const exp = item.scores && item.scores.filter(x=>x && x!=='—').length
+    ? `<span class="experts">Режиссёр ${item.scores[0]} · Оператор ${item.scores[1]} · Инженер ${item.scores[2]} · Анти-слоп ${item.scores[3]} · Структура ${item.scores[4]}</span>` : '';
+  let clean = '';
+  if (item.clean){
+    TEXT[id+'c']=item.clean.prompt;
+    clean = `<div class="clean"><h4>Что было бы без блокировки</h4>
+      <div class="chg">${esc(item.clean.changes)}</div>
+      <div class="grid ${g}">${item.clean.takes.map(t=>tile(t,item,cat,reason)).join('')}</div>
+      <details class="sent"><summary>Исправленный промпт</summary><div style="text-align:right;margin:6px 0"><button class="btn" onclick="copy('${id}c')">Копировать</button></div><pre>${esc(item.clean.prompt)}</pre></details></div>`;
+  }
+  const html = window.marked ? marked.parse(item.answer.replace(/</g,'&lt;')) : `<pre>${esc(item.answer)}</pre>`;
+  return `<article class="card" id="${id}">
+    <div class="head"><span class="num">${cat.name} · ${item.n}</span><span class="title">${esc(item.title)}</span>
+      ${exp}${item.total?`<span class="score">${item.total}/10</span>`:''}</div>
+    <div class="cols">
+      <div class="col"><div class="lbl">Таск пользователя <button class="btn" onclick="copy('${id}t')">Копировать</button></div>
+        <div class="task">${esc(item.task)}</div></div>
+      <div class="col"><div class="lbl">Ответ LLM <button class="btn" onclick="copy('${id}a')">Копировать</button></div>
+        <div class="md" id="md${id}">${html}</div>
+        <button class="btn more" onclick="const m=document.getElementById('md${id}');m.classList.toggle('open');this.textContent=m.classList.contains('open')?'Свернуть':'Показать целиком'">Показать целиком</button>
+        <details class="sent"><summary>Что ушло в генерацию (Seedance 2.5 · ${item.dur} с · ${item.aspect||'—'} · 1080p)</summary>
+          <div style="text-align:right;margin:6px 0"><button class="btn" onclick="copy('${id}p')">Копировать</button></div><pre>${esc(item.prompt)}</pre></details>
+      </div>
+    </div>
+    <div class="vids"><div class="lbl">Видео · ${item.takes.filter(t=>t.status==='completed').length} из ${item.takes.length||6}</div>
+      <div class="grid ${g}">${(item.takes.length?item.takes:[1,2,3,4,5,6].map(n=>({n,status:'pending'}))).map(t=>tile(t,item,cat,reason)).join('')}</div>
+      ${clean}</div>
+  </article>`;
+}
+
+function show(cid){
+  const cat = D.find(c=>c.id===cid) || D[0];
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.id===cat.id));
+  $('#main').innerHTML = cat.items.length ? cat.items.map(i=>card(i,cat)).join('')
+    : `<div class="empty">Категория в работе: ждём исходные ролики для Video to Video.</div>`;
+  try{ localStorage.setItem('tab', cat.id); }catch(e){}
+  history.replaceState(null,'','#'+cat.id);
+}
+$('#tabs').innerHTML = D.map(c=>`<button data-id="${c.id}" onclick="show('${c.id}')">${c.name}<span class="c">${c.items.length||'—'}</span></button>`).join('');
+const total = D.reduce((a,c)=>a+c.items.length,0);
+$('#sub').textContent = `${total} тасков · пустая LLM без контекста · по 6 прогонов Seedance 2.5`;
+let start = location.hash.slice(1); try{ start = start || localStorage.getItem('tab'); }catch(e){}
+show(start);
+</script>
+</body>
+</html>
