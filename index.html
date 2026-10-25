@@ -28,6 +28,10 @@ header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88
 .top h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
 .top h1 a{color:inherit;text-decoration:none}
 .top .sub{color:var(--muted);font-size:13px}
+.top{flex-wrap:wrap}
+.models{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.models button{border:0;background:transparent;color:var(--muted);padding:5px 12px;border-radius:7px;font:600 13px Inter,sans-serif;cursor:pointer;white-space:nowrap}
+.models button.on{background:var(--accent);color:#fff}
 nav{padding:6px 0 10px}
 nav .row{display:flex;gap:4px;align-items:center;overflow-x:auto;padding:3px 0;scrollbar-width:none}
 nav button{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 13px;border-radius:999px;font:500 13px Inter,sans-serif;cursor:pointer;white-space:nowrap}
@@ -94,14 +98,14 @@ nav .sep{flex:none;width:96px;color:var(--muted);font-size:12px;white-space:nowr
 </head>
 <body>
 <header><div class="wrap">
-  <div class="top"><h1><a href="./" onclick="event.preventDefault();show(D[0].id);scrollTo({top:0,behavior:'smooth'})">Prompt Bench</a></h1><span class="sub" id="sub"></span></div>
+  <div class="top"><h1><a href="./" onclick="event.preventDefault();show(D[0].id);scrollTo({top:0,behavior:'smooth'})">Prompt Bench</a></h1><div class="models" id="models"></div><span class="sub" id="sub"></span></div>
   <nav id="tabs"></nav>
 </div></header>
 <main class="wrap" id="main"></main>
 <div class="toast" id="toast"></div>
-<script src="data.js?v=1792905473"></script>
+<script src="data.js?v=1792908873"></script>
 <script>
-const D = window.BENCH, $ = s => document.querySelector(s);
+const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const toast = t => { const e=$('#toast'); e.textContent=t; e.classList.add('on'); setTimeout(()=>e.classList.remove('on'),1400); };
 const TEXT = {};
@@ -213,17 +217,29 @@ function show(cid){
   const cat = D.find(c=>c.id===cid) || D[0];
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.id===cat.id));
   $('#main').innerHTML = cat.items.length ? cat.items.map(i=>cat.kind==='asset'?acard(i,cat):card(i,cat)).join('')
-    : `<div class="empty">Категория в работе: ждём исходные ролики для Video to Video.</div>`;
+    : `<div class="empty">${cat.id==='v2v' ? 'Категория в работе: ждём исходные ролики для Video to Video.' : 'В работе: ответы и генерации этой модели ещё собираются.'}</div>`;
   try{ localStorage.setItem('tab', cat.id); }catch(e){}
-  history.replaceState(null,'','#'+cat.id);
+  history.replaceState(null,'','#'+M.id+'/'+cat.id);
 }
-const btn = c => `<button data-id="${c.id}" onclick="show('${c.id}')">${c.name}<span class="c">${c.items.length||'—'}</span></button>`;
-$('#tabs').innerHTML = '<div class="row"><span class="sep">Видео</span>' + D.filter(c=>c.kind!=='asset').map(btn).join('')
-  + '</div><div class="row"><span class="sep">Фото-ассеты</span>' + D.filter(c=>c.kind==='asset').map(btn).join('') + '</div>';
-const total = D.reduce((a,c)=>a+c.items.length,0);
-$('#sub').textContent = `${total} тасков · пустая LLM без контекста · по 6 прогонов (видео — Seedance 2.5, фото — GPT Image 2.5 → правка Ideogram 4.5)`;
-let start = location.hash.slice(1); try{ start = start || localStorage.getItem('tab'); }catch(e){}
-show(start);
+// модели: переключатель сверху, у каждой свой набор вкладок
+const MODELS = window.BENCH;
+let M = MODELS[0], D = M.cats;
+function useModel(mid, cid){
+  M = MODELS.find(m=>m.id===mid) || MODELS[0]; D = M.cats;
+  document.querySelectorAll('.models button').forEach(b=>b.classList.toggle('on', b.dataset.m===M.id));
+  const btn = c => `<button data-id="${c.id}" onclick="show('${c.id}')">${c.name}<span class="c">${c.items.length||'—'}</span></button>`;
+  $('#tabs').innerHTML = '<div class="row"><span class="sep">Видео</span>' + D.filter(c=>c.kind!=='asset').map(btn).join('')
+    + '</div><div class="row"><span class="sep">Фото-ассеты</span>' + D.filter(c=>c.kind==='asset').map(btn).join('') + '</div>';
+  const total = D.reduce((a,c)=>a+c.items.length,0);
+  $('#sub').textContent = `${M.name} · ${total} тасков · пустая LLM без контекста · по 6 прогонов (видео — Seedance 2.5, фото — GPT Image 2.5 → правка Ideogram 4.5)`;
+  try{ localStorage.setItem('model', M.id); }catch(e){}
+  show(cid);
+}
+$('#models').innerHTML = MODELS.map(m=>`<button data-m="${m.id}" onclick="useModel('${m.id}', (document.querySelector('nav button.on')||{}).dataset?.id)">${m.name}</button>`).join('');
+let [hm, hc] = location.hash.slice(1).split('/');
+if (hm && !hc && !MODELS.some(m=>m.id===hm)) { hc = hm; hm = ''; }  // старые ссылки вида #cinematic
+try{ hm = hm || localStorage.getItem('model'); hc = hc || localStorage.getItem('tab'); }catch(e){}
+useModel(hm, hc);
 </script>
 </body>
 </html>
