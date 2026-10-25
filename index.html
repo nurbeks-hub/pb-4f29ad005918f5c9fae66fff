@@ -27,7 +27,8 @@ header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88
 .top{display:flex;align-items:baseline;gap:14px;padding:16px 0 6px}
 .top h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
 .top .sub{color:var(--muted);font-size:13px}
-nav{display:flex;gap:4px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:none}
+nav{padding:6px 0 10px}
+nav .row{display:flex;gap:4px;align-items:center;overflow-x:auto;padding:3px 0;scrollbar-width:none}
 nav button{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 13px;border-radius:999px;font:500 13px Inter,sans-serif;cursor:pointer;white-space:nowrap}
 nav button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 nav button .c{opacity:.55;margin-left:6px}
@@ -82,7 +83,8 @@ details.sent pre{background:var(--code);padding:10px 12px;border-radius:8px;whit
 .step{padding:16px 20px 20px;border-top:1px solid var(--line)}
 .step h3{margin:0 0 10px;font-size:14px;display:flex;gap:10px;align-items:baseline}
 .step h3 .m{font-weight:500;color:var(--muted);font-size:12.5px}
-nav .sep{align-self:center;color:var(--muted);font-size:12px;padding:0 6px 0 10px;white-space:nowrap}
+nav .sep{flex:none;width:96px;color:var(--muted);font-size:12px;white-space:nowrap}
+@media (max-width:600px){nav .sep{width:auto;padding-right:6px}}
 .empty{padding:40px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:14px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
 .toast.on{opacity:1}
@@ -215,8 +217,8 @@ function show(cid){
   history.replaceState(null,'','#'+cat.id);
 }
 const btn = c => `<button data-id="${c.id}" onclick="show('${c.id}')">${c.name}<span class="c">${c.items.length||'—'}</span></button>`;
-$('#tabs').innerHTML = '<span class="sep">Видео</span>' + D.filter(c=>c.kind!=='asset').map(btn).join('')
-  + '<span class="sep">Фото-ассеты</span>' + D.filter(c=>c.kind==='asset').map(btn).join('');
+$('#tabs').innerHTML = '<div class="row"><span class="sep">Видео</span>' + D.filter(c=>c.kind!=='asset').map(btn).join('')
+  + '</div><div class="row"><span class="sep">Фото-ассеты</span>' + D.filter(c=>c.kind==='asset').map(btn).join('') + '</div>';
 const total = D.reduce((a,c)=>a+c.items.length,0);
 $('#sub').textContent = `${total} тасков · пустая LLM без контекста · по 6 прогонов (видео — Seedance 2.5, фото — GPT Image 2.5 → правка Ideogram 4.5)`;
 let start = location.hash.slice(1); try{ start = start || localStorage.getItem('tab'); }catch(e){}
