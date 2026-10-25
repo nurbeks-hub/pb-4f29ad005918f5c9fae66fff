@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Prompt Bench · Video</title>
+<title>Prompt Bench</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -74,6 +74,15 @@ details.sent pre{background:var(--code);padding:10px 12px;border-radius:8px;whit
 .clean{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
 .clean h4{margin:0 0 4px;font-size:13.5px}
 .clean .chg{font-size:13px;color:var(--muted);margin-bottom:10px;white-space:pre-wrap}
+.grid.img{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.grid.img .tile{aspect-ratio:1/1;background:var(--code)}
+.tile img{display:block;width:100%;height:100%;object-fit:contain;cursor:zoom-in}
+.tile.pick{outline:3px solid var(--accent);outline-offset:-3px}
+.tile .tag{position:absolute;left:6px;bottom:6px;background:var(--accent);color:#fff;font:600 11px Inter;padding:2px 7px;border-radius:6px}
+.step{padding:16px 20px 20px;border-top:1px solid var(--line)}
+.step h3{margin:0 0 10px;font-size:14px;display:flex;gap:10px;align-items:baseline}
+.step h3 .m{font-weight:500;color:var(--muted);font-size:12.5px}
+nav .sep{align-self:center;color:var(--muted);font-size:12px;padding:0 6px 0 10px;white-space:nowrap}
 .empty{padding:40px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:14px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
 .toast.on{opacity:1}
@@ -82,7 +91,7 @@ details.sent pre{background:var(--code);padding:10px 12px;border-radius:8px;whit
 </head>
 <body>
 <header><div class="wrap">
-  <div class="top"><h1>Prompt Bench · Video</h1><span class="sub" id="sub"></span></div>
+  <div class="top"><h1>Prompt Bench</h1><span class="sub" id="sub"></span></div>
   <nav id="tabs"></nav>
 </div></header>
 <main class="wrap" id="main"></main>
@@ -152,17 +161,64 @@ function card(item, cat){
   </article>`;
 }
 
+function itile(t, name, picked){
+  if (t.status==='completed' && t.url){
+    return `<div class="tile${picked?' pick':''}"><img src="${t.thumb||t.url}" loading="lazy" alt="#${t.n}" onclick="window.open('${t.url}','_blank')">
+      <div class="bar"><span>#${t.n}</span><span><button class="ic" onclick="window.open('${t.url}','_blank')">⤢ Открыть</button>
+      <button class="ic" onclick="dl('${t.url}','${esc(name)} ${t.n}.png',this)">Скачать</button></span></div>
+      ${picked?'<span class="tag">выбрана → правка</span>':''}</div>`;
+  }
+  if (t.status==='ip_detected') return `<div class="tile blocked"><b>#${t.n} · заблокировано</b>Фильтр IP Higgsfield.</div>`;
+  if (t.status==='failed' || t.status==='nsfw') return `<div class="tile blocked"><b>#${t.n} · ошибка</b>Генерация не прошла (${t.status}).</div>`;
+  return `<div class="tile pending">#${t.n} · генерируется…</div>`;
+}
+function textCol(id, label, text, isMd){
+  TEXT[id]=text;
+  const body = isMd ? (window.marked ? marked.parse(text.replace(/</g,'&lt;')) : `<pre>${esc(text)}</pre>`) : esc(text);
+  return `<div class="col"><div class="lbl">${label} <button class="btn" onclick="copy('${id}')">Копировать</button></div>
+    ${isMd ? `<div class="md" id="md${id}">${body}</div><button class="btn more" onclick="const m=document.getElementById('md${id}');m.classList.toggle('open');this.textContent=m.classList.contains('open')?'Свернуть':'Показать целиком'">Показать целиком</button>` : `<div class="task">${body}</div>`}`;
+}
+function sent(id, label, text){
+  TEXT[id]=text;
+  return `<details class="sent"><summary>${label}</summary><div style="text-align:right;margin:6px 0"><button class="btn" onclick="copy('${id}')">Копировать</button></div><pre>${esc(text)}</pre></details>`;
+}
+function acard(item, cat){
+  const id = cat.id+item.n, name = `${cat.name} ${item.n}`;
+  const [s1,s2] = (item.steps||'').split('/').map(x=>x.trim());
+  const exp = item.scores && item.scores.length
+    ? `<span class="experts">Режиссёр ${item.scores[0]} · Оператор ${item.scores[1]} · Инженер ${item.scores[2]} · Анти-слоп ${item.scores[3]} · Структура ${item.scores[4]}</span>` : '';
+  const pend = n => [1,2,3,4,5,6].map(k=>({n:k,status:'pending'}));
+  const imgs = item.images.length ? item.images : pend();
+  const eds = item.edits.length ? item.edits : pend();
+  return `<article class="card" id="${id}">
+    <div class="head"><span class="num">${name}</span><span class="title">${esc(item.title)}</span>
+      ${exp}${item.total?`<span class="score">${item.total}/10</span>`:''}</div>
+    <div class="step" style="border-top:0"><h3>Шаг 1 · генерация <span class="m">GPT Image 2.5 · 4K · 6 прогонов${s1?' · оценка шага '+s1:''}</span></h3></div>
+    <div class="cols">${textCol(id+'t','Таск пользователя',item.task,false)}</div>
+      ${textCol(id+'a','Ответ LLM',item.answer,true)}${sent(id+'p','Что ушло в генерацию',item.prompt)}</div></div>
+    <div class="vids"><div class="lbl">Картинки · ${imgs.filter(t=>t.status==='completed').length} из 6</div>
+      <div class="grid img">${imgs.map(t=>itile(t,name+' img',String(t.n)===item.chosen)).join('')}</div></div>
+    <div class="step"><h3>Шаг 2 · правка в том же чате <span class="m">Ideogram 4.5 по картинке #${item.chosen||'—'} · 6 прогонов${s2?' · оценка шага '+s2:''}</span></h3></div>
+    <div class="cols">${textCol(id+'et','Запрос на правку (с картинкой)',item.edit_task,false)}</div>
+      ${textCol(id+'ea','Ответ LLM',item.edit_answer||'Ждём ответ…',true)}${item.edit_prompt?sent(id+'ep','Что ушло в правку',item.edit_prompt):''}</div></div>
+    <div class="vids"><div class="lbl">Правки · ${eds.filter(t=>t.status==='completed').length} из 6</div>
+      <div class="grid img">${eds.map(t=>itile(t,name+' edit',false)).join('')}</div></div>
+  </article>`;
+}
+
 function show(cid){
   const cat = D.find(c=>c.id===cid) || D[0];
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.id===cat.id));
-  $('#main').innerHTML = cat.items.length ? cat.items.map(i=>card(i,cat)).join('')
+  $('#main').innerHTML = cat.items.length ? cat.items.map(i=>cat.kind==='asset'?acard(i,cat):card(i,cat)).join('')
     : `<div class="empty">Категория в работе: ждём исходные ролики для Video to Video.</div>`;
   try{ localStorage.setItem('tab', cat.id); }catch(e){}
   history.replaceState(null,'','#'+cat.id);
 }
-$('#tabs').innerHTML = D.map(c=>`<button data-id="${c.id}" onclick="show('${c.id}')">${c.name}<span class="c">${c.items.length||'—'}</span></button>`).join('');
+const btn = c => `<button data-id="${c.id}" onclick="show('${c.id}')">${c.name}<span class="c">${c.items.length||'—'}</span></button>`;
+$('#tabs').innerHTML = '<span class="sep">Видео</span>' + D.filter(c=>c.kind!=='asset').map(btn).join('')
+  + '<span class="sep">Фото-ассеты</span>' + D.filter(c=>c.kind==='asset').map(btn).join('');
 const total = D.reduce((a,c)=>a+c.items.length,0);
-$('#sub').textContent = `${total} тасков · пустая LLM без контекста · по 6 прогонов Seedance 2.5`;
+$('#sub').textContent = `${total} тасков · пустая LLM без контекста · по 6 прогонов (видео — Seedance 2.5, фото — GPT Image 2.5 → правка Ideogram 4.5)`;
 let start = location.hash.slice(1); try{ start = start || localStorage.getItem('tab'); }catch(e){}
 show(start);
 </script>
