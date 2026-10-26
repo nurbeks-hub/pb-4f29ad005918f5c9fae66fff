@@ -103,7 +103,7 @@ nav .sep{flex:none;width:96px;color:var(--muted);font-size:12px;white-space:nowr
 </div></header>
 <main class="wrap" id="main"></main>
 <div class="toast" id="toast"></div>
-<script src="data.js?v=1792911295"></script>
+<script src="data.js?v=1793032579"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -213,10 +213,34 @@ function acard(item, cat){
   </article>`;
 }
 
+function i2vcard(item, cat){
+  const id = cat.id+item.n, name = `${cat.name} ${item.n}`, g = item.aspect==='9:16' ? 'v' : 'h';
+  const at = a => a.url ? `<div class="tile"><img src="${a.thumb||a.url}" loading="lazy" alt="${esc(a.role)}" onclick="window.open('${a.url}','_blank')">
+      <div class="bar"><span>${esc(a.role)}</span><span><button class="ic" onclick="window.open('${a.url}','_blank')">⤢ Открыть</button></span></div></div>`
+    : `<div class="tile pending">${esc(a.role)}</div>`;
+  const ap = item.assets.map((a,i)=>sent(id+'ap'+i, `Промпт: ${esc(a.role)} — ${esc(a.name)}`, a.prompt)).join('');
+  const done = item.takes.filter(t=>t.status==='completed').length;
+  const vids = item.prompt
+    ? `<div class="grid ${g}">${item.takes.map(t=>tile(t,item,cat,'')).join('')}</div>`
+    : `<div class="empty" style="padding:18px">LLM не дала единый промпт на 15 с: предложила план из нескольких клипов и дополнительных кадров. Видео не генерировали.</div>`;
+  return `<article class="card" id="${id}">
+    <div class="head"><span class="num">${name}</span><span class="title">${esc(item.title)}</span><span class="experts">${esc(item.genre)} · ${esc(item.fmt)}</span></div>
+    <div class="step" style="border-top:0"><h3>Шаг 1 · промпты ассетов <span class="m">2 персонажа, локация, объект · Soul Cinematic 2k · по 1 картинке</span></h3></div>
+    <div class="cols">${textCol(id+'t','Таск пользователя',item.task,false)}</div>
+      ${textCol(id+'a','Ответ LLM',item.answer,true)}${ap}</div></div>
+    <div class="vids"><div class="lbl">Ассеты</div><div class="grid img">${item.assets.map(at).join('')}</div></div>
+    <div class="step"><h3>Шаг 2 · видео из ассетов в том же чате <span class="m">Seedance 2.5 · 4 референса · 15 с · ${item.aspect} · 1080p · 6 прогонов</span></h3></div>
+    <div class="cols">${textCol(id+'t2','Запрос (с 4 картинками)',item.task2,false)}</div>
+      ${textCol(id+'a2','Ответ LLM',item.answer2,true)}${item.prompt?sent(id+'p','Что ушло в генерацию',item.prompt):''}
+      ${item.order.length?`<div class="chg" style="margin-top:8px">Картинки загрузились не в том порядке, что в тексте; LLM это заметила. В Seedance они ушли в порядке, который она назвала: ${item.order.map((x,i)=>(i+1)+' — '+esc(x)).join(', ')}.</div>`:''}</div></div>
+    <div class="vids"><div class="lbl">Видео · ${done} из ${item.takes.length||6}</div>${vids}</div>
+  </article>`;
+}
+
 function show(cid){
   const cat = D.find(c=>c.id===cid) || D[0];
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.id===cat.id));
-  $('#main').innerHTML = cat.items.length ? cat.items.map(i=>cat.kind==='asset'?acard(i,cat):card(i,cat)).join('')
+  $('#main').innerHTML = cat.items.length ? cat.items.map(i=>cat.kind==='asset'?acard(i,cat):cat.kind==='i2v'?i2vcard(i,cat):card(i,cat)).join('')
     : `<div class="empty">${cat.id==='v2v' ? 'Категория в работе: ждём исходные ролики для Video to Video.' : 'В работе: ответы и генерации этой модели ещё собираются.'}</div>`;
   try{ localStorage.setItem('tab', cat.id); }catch(e){}
   history.replaceState(null,'','#'+M.id+'/'+cat.id);
