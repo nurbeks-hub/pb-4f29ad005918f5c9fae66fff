@@ -109,7 +109,7 @@ nav .sep{flex:none;width:96px;padding-top:8px;color:var(--muted);font-size:12px;
 </div></header>
 <main class="wrap" id="main"></main>
 <div class="toast" id="toast"></div>
-<script src="data.js?v=1793052441"></script>
+<script src="data.js?v=1793052507"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -161,7 +161,7 @@ function card(item, cat){
     <div class="cols">
       <div class="col"><div class="lbl">Таск пользователя <button class="btn" onclick="copy('${id}t')">Копировать</button></div>
         <div class="task">${esc(item.task)}</div></div>
-      <div class="col"><div class="lbl">Ответ LLM <button class="btn" onclick="copy('${id}a')">Копировать</button></div>
+      <div class="col"><div class="lbl">Ответ ${esc(M.name)} <button class="btn" onclick="copy('${id}a')">Копировать</button></div>
         <div class="md" id="md${id}">${html}</div>
         <button class="btn more" onclick="const m=document.getElementById('md${id}');m.classList.toggle('open');this.textContent=m.classList.contains('open')?'Свернуть':'Показать целиком'">Показать целиком</button>
         <details class="sent"><summary>Что ушло в генерацию (Seedance 2.5 · ${item.dur} с · ${item.aspect||'—'} · 1080p)</summary>
@@ -208,12 +208,12 @@ function acard(item, cat){
       ${exp}${item.total?`<span class="score">${item.total}/10</span>`:''}</div>
     <div class="step" style="border-top:0"><h3>Шаг 1 · генерация <span class="m">GPT Image 2.5 · 4K · 6 прогонов${s1?' · оценка шага '+s1:''}</span></h3></div>
     <div class="cols">${textCol(id+'t','Таск пользователя',item.task,false)}</div>
-      ${textCol(id+'a','Ответ LLM',item.answer,true)}${sent(id+'p','Что ушло в генерацию',item.prompt)}</div></div>
+      ${textCol(id+'a','Ответ '+M.name,item.answer,true)}${sent(id+'p','Что ушло в генерацию',item.prompt)}</div></div>
     <div class="vids"><div class="lbl">Картинки · ${imgs.filter(t=>t.status==='completed').length} из 6</div>
       <div class="grid img">${imgs.map(t=>itile(t,name+' img',String(t.n)===item.chosen)).join('')}</div></div>
     <div class="step"><h3>Шаг 2 · правка в том же чате <span class="m">Ideogram 4.5 по картинке #${item.chosen||'—'} · 6 прогонов${s2?' · оценка шага '+s2:''}</span></h3></div>
     <div class="cols">${textCol(id+'et','Запрос на правку (с картинкой)',item.edit_task,false)}</div>
-      ${textCol(id+'ea','Ответ LLM',item.edit_answer||'Ждём ответ…',true)}${item.edit_prompt?sent(id+'ep','Что ушло в правку',item.edit_prompt):''}</div></div>
+      ${textCol(id+'ea','Ответ '+M.name,item.edit_answer||'Ждём ответ…',true)}${item.edit_prompt?sent(id+'ep','Что ушло в правку',item.edit_prompt):''}</div></div>
     <div class="vids"><div class="lbl">Правки · ${eds.filter(t=>t.status==='completed').length} из 6</div>
       <div class="grid img">${eds.map(t=>itile(t,name+' edit',false)).join('')}</div></div>
   </article>`;
@@ -234,11 +234,11 @@ function i2vcard(item, cat){
     <div class="head"><span class="num">${name}</span><span class="title">${esc(item.title)}</span><span class="experts">${esc(item.genre)} · ${esc(item.fmt)}</span></div>
     <div class="step" style="border-top:0"><h3>Шаг 1 · промпты ассетов <span class="m">2 персонажа, локация, объект · ${esc(item.gens)}</span></h3></div>
     <div class="cols">${textCol(id+'t','Таск пользователя',item.task,false)}</div>
-      ${textCol(id+'a','Ответ LLM',item.answer,true)}${ap}</div></div>
+      ${textCol(id+'a','Ответ '+M.name,item.answer,true)}${ap}</div></div>
     <div class="vids"><div class="lbl">Ассеты</div><div class="grid img">${item.assets.map(at).join('')}</div></div>
     <div class="step"><h3>Шаг 2 · видео из ассетов в том же чате <span class="m">Seedance 2.5 · 4 референса · 15 с · ${item.aspect} · 1080p · 6 прогонов</span></h3></div>
     <div class="cols">${textCol(id+'t2','Запрос (с 4 картинками)',item.task2,false)}</div>
-      ${textCol(id+'a2','Ответ LLM',item.answer2,true)}${item.prompt?sent(id+'p','Что ушло в генерацию',item.prompt):''}
+      ${textCol(id+'a2','Ответ '+M.name,item.answer2,true)}${item.prompt?sent(id+'p','Что ушло в генерацию',item.prompt):''}
       ${item.order.length?`<div class="chg" style="margin-top:8px">Картинки загрузились не в том порядке, что в тексте; LLM это заметила. В Seedance они ушли в порядке, который она назвала: ${item.order.map((x,i)=>(i+1)+' — '+esc(x)).join(', ')}.</div>`:''}</div></div>
     <div class="vids"><div class="lbl">Видео · ${done} из ${item.takes.length||6}</div>${vids}</div>
   </article>`;
@@ -261,7 +261,7 @@ function rcard(item, cat){
     <div class="cols">
       <div class="col"><div class="lbl">Сообщение пользователя (с 2 видео) <button class="btn" onclick="copy('${id}t')">Копировать</button></div>
         <div class="task">${esc(item.task)}</div></div>
-      <div class="col"><div class="lbl">Ответ ${astra?'GPT 6 Astra':'Claude Opus 5.5'} <button class="btn" onclick="copy('${id}a')">Копировать</button></div>
+      <div class="col"><div class="lbl">Ответ ${esc(M.name)} <button class="btn" onclick="copy('${id}a')">Копировать</button></div>
         <div class="md" id="md${id}">${body}</div>
         <button class="btn more" onclick="const m=document.getElementById('md${id}');m.classList.toggle('open');this.textContent=m.classList.contains('open')?'Свернуть':'Показать целиком'">Показать целиком</button></div>
     </div>
