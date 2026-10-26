@@ -91,6 +91,11 @@ details.sent pre{background:var(--code);padding:10px 12px;border-radius:8px;whit
 .step h3 .m{font-weight:500;color:var(--muted);font-size:12.5px}
 nav .sep{flex:none;width:96px;padding-top:8px;color:var(--muted);font-size:12px;white-space:nowrap}
 @media (max-width:600px){nav .sep{width:auto;padding-right:6px}}
+.intro{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:4px 0 18px;font-size:13.5px;line-height:1.55}
+.intro h2{margin:0 0 6px;font-size:16px}
+.intro dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:10px 0 0}
+.intro dt{color:var(--muted)}.intro dd{margin:0}
+@media (max-width:600px){.intro dl{grid-template-columns:1fr}.intro dt{margin-top:6px}}
 .empty{padding:40px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:14px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
 .toast.on{opacity:1}
@@ -104,7 +109,7 @@ nav .sep{flex:none;width:96px;padding-top:8px;color:var(--muted);font-size:12px;
 </div></header>
 <main class="wrap" id="main"></main>
 <div class="toast" id="toast"></div>
-<script src="data.js?v=1793039006"></script>
+<script src="data.js?v=1793039607"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -239,11 +244,19 @@ function i2vcard(item, cat){
   </article>`;
 }
 
+const DESC = {"cinematic": ["Кинематографичные сцены", "Может ли LLM по свободному описанию сцены написать промпт, который даст кино: драматургия, камера, свет, действие.", "Пустая LLM без скиллов и контекста, каждый таск в новом чате. Пользователь пишет обычным языком, LLM отдаёт промпт. Промпт дословно уходит в Seedance 2.5 text-to-video: 1080p, 15 с, формат как в таске, 6 прогонов. Если прогон заблокировал IP-фильтр, рядом перезапуск с промптом без имён и брендов. Таски 01–02 написаны по-русски, остальные по-английски; таск 01 — 30 с."], "fighting": ["Драки", "Хореография боя: читаемые удары и реакции, физика, география героев, камера в экшене.", "Пустая LLM без скиллов и контекста, каждый таск в новом чате. Пользователь пишет обычным языком, LLM отдаёт промпт. Промпт дословно уходит в Seedance 2.5 text-to-video: 1080p, 15 с, формат как в таске, 6 прогонов. Если прогон заблокировал IP-фильтр, рядом перезапуск с промптом без имён и брендов."], "talking-head": ["Говорящая голова", "Человек говорит в камеру: дословная реплика, естественная подача, липсинк, правдоподобный фон и свет.", "Пустая LLM без скиллов и контекста, каждый таск в новом чате. Пользователь пишет обычным языком, LLM отдаёт промпт. Промпт дословно уходит в Seedance 2.5 text-to-video: 1080p, 15 с, формат как в таске, 6 прогонов. Если прогон заблокировал IP-фильтр, рядом перезапуск с промптом без имён и брендов."], "dialogue": ["Драматический диалог", "Сцена двух людей: реплики дословно и по очереди, игра актёров, смена планов, эмоция без пережима.", "Пустая LLM без скиллов и контекста, каждый таск в новом чате. Пользователь пишет обычным языком, LLM отдаёт промпт. Промпт дословно уходит в Seedance 2.5 text-to-video: 1080p, 15 с, формат как в таске, 6 прогонов. Если прогон заблокировал IP-фильтр, рядом перезапуск с промптом без имён и брендов."], "v2v": ["Video to Video", "Переделка готового ролика по запросу пользователя.", "Ждём исходные ролики."], "ugc": ["UGC", "Ролик «снято на телефон» с продуктом: живой человек, правдоподобная съёмка, продукт читается и не искажается.", "Пустая LLM без скиллов и контекста, каждый таск в новом чате. Пользователь пишет обычным языком, LLM отдаёт промпт. Промпт дословно уходит в Seedance 2.5 text-to-video: 1080p, 15 с, формат как в таске, 6 прогонов. Если прогон заблокировал IP-фильтр, рядом перезапуск с промптом без имён и брендов."], "paid-ads": ["Платная реклама", "Реклама малого бизнеса: хук в первые секунды, продукт или услуга понятны, финальный призыв.", "Пустая LLM без скиллов и контекста, каждый таск в новом чате. Пользователь пишет обычным языком, LLM отдаёт промпт. Промпт дословно уходит в Seedance 2.5 text-to-video: 1080p, 15 с, формат как в таске, 6 прогонов. Если прогон заблокировал IP-фильтр, рядом перезапуск с промптом без имён и брендов."], "i2v": ["Image to Video", "Сцена из ассетов, собранная в два шага в одном чате. Шаг 1: LLM пишет 4 промпта — 2 персонажа, пустая локация, объект. Шаг 2: пользователь прикладывает 4 готовые картинки и просит видеопромпт с ними.", "Пустая LLM, новый чат на таск. Киношный цвет просит сам пользователь. Ассеты: Soul Cinematic 2K, по 1 картинке. Видео: Seedance 2.5 omni-reference, 4 картинки как референсы, 1080p, 15 с, 6 прогонов. В этом прогоне картинки загружались пачкой и приходили в чат не в том порядке — в Seedance они ушли в порядке, который назвала LLM."], "i2v2": ["Image to Video v2 · шиты", "То же, что Image to Video, но пользователь сам просит на персонажей карактер-шиты: полный рост спереди, сзади и портрет по грудь, белый фон.", "Ассеты по совету синематистов: персонажи — Soul 2.0 (2K, 16:9), локация — Soul Cinematic (2K), объект — GPT Image 2.5 (high, 2K), по 1 картинке. Картинки грузились по одной, порядок верный. Видео: Seedance 2.5 omni-reference, 1080p, 15 с, 6 прогонов."], "a-character": ["Персонаж", "Промпт на персонажа-референс для видео (внешность, одежда, поза, фон), затем точечная правка без изменения остального.", "Шаг 1: LLM пишет промпт, он уходит в GPT Image 2.5 (4K, high, 6 прогонов). Шаг 2 в том же чате: пользователь прикладывает лучшую картинку и просит правку, промпт правки уходит в Ideogram 4.5 (2K, 6 прогонов)."], "a-location": ["Локация", "Промпт на пустую локацию-фон для видео, затем правка: время суток, погода, предмет.", "Шаг 1: LLM пишет промпт, он уходит в GPT Image 2.5 (4K, high, 6 прогонов). Шаг 2 в том же чате: пользователь прикладывает лучшую картинку и просит правку, промпт правки уходит в Ideogram 4.5 (2K, 6 прогонов)."], "a-object": ["Предмет", "Промпт на предмет или продукт, затем правка: материал, ракурс, надпись, фон.", "Шаг 1: LLM пишет промпт, он уходит в GPT Image 2.5 (4K, high, 6 прогонов). Шаг 2 в том же чате: пользователь прикладывает лучшую картинку и просит правку, промпт правки уходит в Ideogram 4.5 (2K, 6 прогонов)."], "a-asset-set": ["Набор ассетов", "Серия однородных элементов в одном стиле на одной картинке, затем правка одного элемента.", "Шаг 1: LLM пишет промпт, он уходит в GPT Image 2.5 (4K, high, 6 прогонов). Шаг 2 в том же чате: пользователь прикладывает лучшую картинку и просит правку, промпт правки уходит в Ideogram 4.5 (2K, 6 прогонов)."], "a-start-frame": ["Стартовый кадр", "Первый кадр будущего видео с героем в локации, затем правка композиции, ракурса или света.", "Шаг 1: LLM пишет промпт, он уходит в GPT Image 2.5 (4K, high, 6 прогонов). Шаг 2 в том же чате: пользователь прикладывает лучшую картинку и просит правку, промпт правки уходит в Ideogram 4.5 (2K, 6 прогонов)."]};
+const SCORE = "Комиссия из 5 экспертов: режиссёр, оператор, инженер, анти-слоп, структура. Оценки предварительные — канон оценки ещё не утверждён.";
+function intro(cat){
+  const d = DESC[cat.id]; if(!d) return '';
+  const scored = cat.items.some(i=>i.total);
+  return `<section class="intro"><h2>${esc(d[0])}</h2><dl><dt>Что проверяем</dt><dd>${esc(d[1])}</dd>
+    <dt>Условия</dt><dd>${esc(d[2])}</dd>${scored?`<dt>Оценки</dt><dd>${esc(SCORE)}</dd>`:''}</dl></section>`;
+}
 function show(cid){
   const cat = D.find(c=>c.id===cid) || D[0];
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b.dataset.id===cat.id));
-  $('#main').innerHTML = cat.items.length ? cat.items.map(i=>cat.kind==='asset'?acard(i,cat):cat.kind==='i2v'?i2vcard(i,cat):card(i,cat)).join('')
-    : `<div class="empty">${cat.id==='v2v' ? 'Категория в работе: ждём исходные ролики для Video to Video.' : 'В работе: ответы и генерации этой модели ещё собираются.'}</div>`;
+  $('#main').innerHTML = intro(cat) + (cat.items.length ? cat.items.map(i=>cat.kind==='asset'?acard(i,cat):cat.kind==='i2v'?i2vcard(i,cat):card(i,cat)).join('')
+    : `<div class="empty">${cat.id==='v2v' ? 'Категория в работе: ждём исходные ролики для Video to Video.' : 'В работе: ответы и генерации этой модели ещё собираются.'}</div>`);
   try{ localStorage.setItem('tab', cat.id); }catch(e){}
   history.replaceState(null,'','#'+M.id+'/'+cat.id);
 }
@@ -257,7 +270,7 @@ function useModel(mid, cid){
   $('#tabs').innerHTML = '<div class="row"><span class="sep">Видео</span><div class="btns">' + D.filter(c=>c.kind!=='asset').map(btn).join('')
     + '</div></div><div class="row"><span class="sep">Фото-ассеты</span><div class="btns">' + D.filter(c=>c.kind==='asset').map(btn).join('') + '</div></div>';
   const total = D.reduce((a,c)=>a+c.items.length,0);
-  $('#sub').textContent = `${M.name} · ${total} тасков · пустая LLM без контекста · по 6 прогонов (видео — Seedance 2.5, фото — GPT Image 2.5 → правка Ideogram 4.5)`;
+  $('#sub').textContent = `${M.name} · ${total} тасков · пустая LLM без контекста · условия — в описании каждой вкладки`;
   try{ localStorage.setItem('model', M.id); }catch(e){}
   show(cid);
 }
